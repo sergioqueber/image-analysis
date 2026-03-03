@@ -56,7 +56,8 @@ def capture_from_camera_and_show_images():
         dif_img = np.abs(new_frame_gray - frame_gray)
 
         # Computes the total number of foreground, F, pixels in the foreground image.
-        n_foreground_pixels = np.sum(dif_img > 0.1)  # Count pixels with a difference greater than a threshold
+        T=0.1  # Threshold for foreground pixel detection
+        n_foreground_pixels = np.sum(dif_img > T)  # Count pixels with a difference greater than a threshold
         print(f"Number of foreground pixels: {n_foreground_pixels}")
 
         #Compute the percentage of foreground pixels compared to the total number of pixels in the image (F).
@@ -67,7 +68,7 @@ def capture_from_camera_and_show_images():
 
         #Decides if an alarm should be raised if F is larger than an alert value, A.
 
-        A = 3.0  # Alert threshold in percentage
+        A = 0.5  # Alert threshold in percentage
         if F > A:
             print("Alarm: Foreground pixel percentage exceeds alert threshold!")    
 
@@ -87,6 +88,13 @@ def capture_from_camera_and_show_images():
         font = cv2.FONT_HERSHEY_COMPLEX
         cv2.putText(new_frame, str_out, (100, 100), font, 1, 255, 1)
 
+        #Exercise 6: Use putText to write some important information on the image. For example the number of changed pixel, the average, minumum and maximum value in the difference image. These values can then be used to find even better values for T and A. You can also write the text in different colors depending on the values. For example, if F is larger than A, you can write the text in red color.
+        avg_diff = np.mean(dif_img)
+        min_diff = np.min(dif_img)
+        max_diff = np.max(dif_img)
+        str_info = f"Changed pixels: {n_foreground_pixels}, Avg: {avg_diff:.2f}, Min: {min_diff:.2f}, Max: {max_diff:.2f}"
+        cv2.putText(new_frame, str_info, (100, 200), font, 0.5, (255, 255, 255), 1)
+
         #Shows the input image, the backround image, the difference image, and the binary image. The binary image should be converted to uint8 using img_as_ubyte.
 
         binary_img = (dif_img > 0.1).astype(np.uint8) * 255
@@ -102,7 +110,7 @@ def capture_from_camera_and_show_images():
 
         
         # Update background image using exponential moving average
-        alpha = 0.05  # Learning rate for background update
+        alpha = 0.5  # Learning rate for background update
         frame_gray = alpha * frame_gray + (1 - alpha) * new_frame_gray
 
         if cv2.waitKey(1) == ord('q'):
@@ -115,3 +123,13 @@ def capture_from_camera_and_show_images():
 
 if __name__ == '__main__':
     capture_from_camera_and_show_images()
+
+    #Exercise 4: Try to change α T and A What effects do it have?
+    # The parameter α (alpha) controls the learning rate for updating the background model. A higher alpha means that the background model will adapt more quickly to changes in the scene, while a lower alpha will make it more stable and less responsive to changes. Adjusting alpha can help balance between sensitivity to changes and stability of the background model.
+
+#The images are displayed using the OpenCV function imshow. The display window has several ways of zooming in the displayed image.
+
+#Exercise 5: Try to play around with the zoom window.
+
+
+
