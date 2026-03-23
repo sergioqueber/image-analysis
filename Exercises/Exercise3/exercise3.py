@@ -192,6 +192,114 @@ ax[2].set_title(f"Otsu's threshold = {otsu_threshold}")
 plt.show()
 
 
+# Exercise 13: Create a function detect_dtu_signs that takes as 
+# input a color image and returns an image, where the blue sign 
+# is identified by foreground pixels
+dtu_signs = io.imread(in_dir + "DTUSigns2.jpg")
 
+r_comp = dtu_signs[:, :, 0]
+g_comp = dtu_signs[:, :, 1]
+b_comp = dtu_signs[:, :, 2]
 
+segm_blue = (r_comp < 10) & (g_comp > 85) & (g_comp < 105) & \
+            (b_comp > 180) & (b_comp < 200)
+
+def detect_dtu_signs(image):
+    r_comp = image[:, :, 0]
+    g_comp = image[:, :, 1]
+    b_comp = image[:, :, 2]
+
+    segm_blue = (r_comp < 10) & (g_comp > 85) & (g_comp < 105) & \
+                (b_comp > 180) & (b_comp < 200)
+    return img_as_ubyte(segm_blue)
+
+detection = detect_dtu_signs(dtu_signs)
+
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+ax[0].imshow(dtu_signs)
+ax[0].set_title('Original image')
+ax[1].imshow(detection, cmap='gray')
+ax[1].set_title('Detected blue signs')
+plt.show()
+
+# Exercise 14: Extend your detect_dtu_signs function so it 
+# can also detect red signs. You can add an argument to the 
+# function, that tells which color it should look for. 
+# You should use one of the explorative image tools to find out 
+# what the typical RGB values are in the red signs.
+
+def detect_dtu_signs_extended(image, color):
+    r_comp = image[:, :, 0]
+    g_comp = image[:, :, 1]
+    b_comp = image[:, :, 2]
+
+    if color == 'blue':
+        segm_blue = (r_comp < 10) & (g_comp > 85) & (g_comp < 105) & \
+                    (b_comp > 180) & (b_comp < 200)
+        return img_as_ubyte(segm_blue)
+    
+    elif color == 'red':
+        segm_red = (r_comp > 160) & (r_comp < 180) & (g_comp > 50) & (g_comp < 80) & \
+                    (b_comp > 50) & (b_comp < 80)
+        return img_as_ubyte(segm_red)
+    else:
+        raise ValueError("Color must be 'blue' or 'red'")
+    
+detection_red = detect_dtu_signs_extended(dtu_signs, 'red')
+
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
+ax[0].imshow(dtu_signs)
+ax[0].set_title('Original image')
+ax[1].imshow(detection_red, cmap='gray')
+ax[1].set_title('Detected red signs')
+plt.show()
+    
+
+# HSV values
+
+hsv_img = color.rgb2hsv(dtu_signs)
+hue_img = hsv_img[:, :, 0]
+value_img = hsv_img[:, :, 2]
+fig, (ax0, ax1, ax2) = plt.subplots(ncols=3, figsize=(8, 2))
+ax0.imshow(dtu_signs)
+ax0.set_title("RGB image")
+ax0.axis('off')
+ax1.imshow(hue_img, cmap='hsv')
+ax1.set_title("Hue channel")
+ax1.axis('off')
+ax2.imshow(value_img)
+ax2.set_title("Value channel")
+ax2.axis('off')
+
+fig.tight_layout()
+io.show()
+
+# Exercise 15: Now make a sign segmentation function using 
+# tresholding in HSV space and locate both the blue and the red sign.
+
+def detect_dtu_signs_hsv(image, colour):
+    hsv_img = color.rgb2hsv(image)
+    hue_img = hsv_img[:, :, 0]
+    value_img = hsv_img[:, :, 2]
+
+    if colour == 'blue':
+        segm_blue = (hue_img > 0.55) & (hue_img < 0.65) & (value_img > 0.7)
+        return img_as_ubyte(segm_blue)
+    
+    elif colour == 'red':
+        segm_red = ((hue_img > 0.9) & (hue_img < 1))
+        return img_as_ubyte(segm_red)
+    else:
+        raise ValueError("Color must be 'blue' or 'red'")
+    
+detection_red_hsv = detect_dtu_signs_hsv(dtu_signs, 'red')
+detection_blue_hsv = detect_dtu_signs_hsv(dtu_signs, 'blue')  
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(12, 5))
+ax[0].imshow(dtu_signs)
+ax[0].set_title('Original image')
+ax[1].imshow(detection_red_hsv, cmap='gray')
+ax[1].set_title('Detected red signs (HSV)')
+ax[2].imshow(detection_blue_hsv, cmap='gray')
+ax[2].set_title('Detected blue signs (HSV)')
+plt.show()
 
