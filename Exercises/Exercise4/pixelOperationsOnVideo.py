@@ -23,6 +23,10 @@ def show_in_moved_window(win_name, img, x, y):
     cv2.moveWindow(win_name, x, y)
     cv2.imshow(win_name, img)
 
+def apply_median_filter(img, size):
+    footprint = np.ones([size, size])
+    med_img = median(img,footprint)
+    return med_img
 
 def process_gray_image(img):
     """
@@ -32,8 +36,8 @@ def process_gray_image(img):
     # Do something here:
     proc_img = img.copy()
     #Edge detection using Prewitt filter and Otsu's thresholding
-    filtered_img = median(proc_img, selem=np.ones((3, 3)))  # Apply median filter to reduce noise
-    
+    filtered_img = apply_median_filter(proc_img, 5)  # Apply median filter to reduce noise
+
     prewitt_img = prewitt(filtered_img)  # Apply Prewitt filter
 
     T = threshold_otsu(prewitt_img)  # Compute Otsu's threshold
@@ -102,7 +106,7 @@ def capture_from_camera_and_show_images():
         # Display the resulting frame
         show_in_moved_window('Input', new_frame, 0, 10)
         show_in_moved_window('Input gray', new_image_gray, 600, 10)
-        show_in_moved_window('Processed image', proc_img, 1200, 10)
+        show_in_moved_window('Processed image', proc_img, 750, 10)
 
         if cv2.waitKey(1) == ord('q'):
             stop = True
