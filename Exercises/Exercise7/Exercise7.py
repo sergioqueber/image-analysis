@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import math
-from skimage.transform import rotate
+from skimage.transform import matrix_transform, rotate
 from skimage.transform import EuclideanTransform
 from skimage.transform import SimilarityTransform
 from skimage.transform import warp
 from skimage.transform import swirl
-from skimage import io
+from skimage import img_as_float, io
+import numpy as np
 
 def show_comparison(original, transformed, transformed_name):
     fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(8, 4), sharex=True,
@@ -104,5 +105,94 @@ scale = 0.6
 tform = SimilarityTransform(rotation=rotation_angle, translation=trans, scale=scale)
 transformed_img = warp(im_org, tform.inverse)
 show_comparison(im_org, transformed_img, f'Rotated by {rotation_angle} radians, translated by {trans} and scaled by {scale} using SimilarityTransform') 
+
+
+#Exercise 10¶
+# Try the swirl transformation:
+
+str = 10
+rad = 300
+swirl_img = swirl(im_org, strength=str, radius=rad, center = [500, 400])
+
+show_comparison(im_org, swirl_img, f'Swirled with strength {str} and radius {rad}')
+
+swirl_img = swirl(im_org, strength=str, radius=rad, center = [0, 0])
+show_comparison(im_org, swirl_img, f'Swirled with strength {-str} and radius {rad}')
+
+# Exercise 11
+# Start by reading the two images into src_img and dst_img
+src_img = io.imread('data/Hand1.jpg')
+dst_img = io.imread('data/Hand2.jpg')
+
+blend = 0.5 * img_as_float(src_img) + 0.5 * img_as_float(dst_img)
+io.imshow(blend)
+io.show()
+
+# Exercise 12
+#We dfine landmarks 
+
+src = np.array([[588, 274], [328, 179], [134, 398], [260, 525], [613, 448]])
+
+plt.imshow(src_img)
+plt.plot(src[:, 0], src[:, 1], '.r', markersize=12)
+plt.show()
+
+#Exercise 13
+# You should now place the same landmarks on the destination image.
+
+dst = np.array([[621, 293], [382, 166], [198, 266], [270, 440], [600, 450]])
+
+fig, ax = plt.subplots()
+ax.plot(src[:, 0], src[:, 1], '-r', markersize=12, label="Source")
+ax.plot(dst[:, 0], dst[:, 1], '-g', markersize=12, label="Destination")
+ax.invert_yaxis()
+ax.legend()
+ax.set_title("Landmarks before alignment")
+plt.show()
+
+# To calculate how well two sets of landmarks are aligned, we can compute the objective function. 
+
+#Exercise 14 Compute F from your landmarks
+
+def objective_function(src, dst):
+    e_x = src[:, 0] - dst[:, 0]
+    error_x = np.dot(e_x, e_x)
+    e_y = src[:, 1] - dst[:, 1]
+    error_y = np.dot(e_y, e_y)
+    f = error_x + error_y
+    return f
+
+f = objective_function(src, dst)
+print(f"Landmark alignment error F: {f}")
+
+tform = EuclideanTransform()
+tform.estimate(src, dst)
+
+src_transform = matrix_transform(src, tform.params)
+
+#Exercise 15¶
+#Visualize the transformed source landmarks together with the destination landmarks. Also compute the objective function 
+#F using the transformed points. What do you observe?
+fig, ax = plt.subplots()
+ax.plot(src_transform[:, 0], src_transform[:, 1], '-r', markersize=12, label="Transformed Source")
+ax.plot(dst[:, 0], dst[:, 1], '-g', markersize=12, label="Destination")
+ax.invert_yaxis()  
+ax.legend()
+ax.set_title("Landmarks after alignment")
+plt.show()
+f_transformed = objective_function(src_transform, dst)
+print(f"Landmark alignment error F after transformation: {f_transformed}")
+
+#Exercise 16¶
+# We can now apply the transformation to the source image. Notice that we use the inverse transform due to the inverse mapping in the image resampling:
+
+warped_src_img = warp(src_img, tform.inverse)
+show_comparison(src_img, warped_src_img, 'Warped Source Image')
+
+#Show the warped image and also try to blend the warped image destination image like in exercise 11. What do you observe?
+blend = 0.5 * img_as_float(warped_src_img) + 0.5 * img_as_float(dst_img)
+io.imshow(blend)
+io.show()
+
 
 

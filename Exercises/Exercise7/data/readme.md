@@ -1,13 +1,15 @@
+# Data and material for exercise 7 - Geometric transformations and landmark based registration
+
+## Exercise script for transformation on video
+
+```python
 import time
 import cv2
-from numpy import astype
 from skimage.transform import swirl
 from skimage.transform import rotate
 import math
 
 
-# Exercise 18
-#  Modify the program so it performs the swirl transform on the image. The parameters of the swirl transform can be changed using the counter.
 def show_in_moved_window(win_name, img, x, y):
     """
     Show an image in a window, where the position of the window can be given
@@ -21,8 +23,7 @@ def process_rgb_image(img, counter):
     """
     Simple processing of a color (RGB) image
     """
-    str = math.sin(counter / 10) * 10
-    return swirl(img, rotation=counter, strength= str, radius=100)
+    return rotate(img, counter)
 
 
 def capture_from_camera_and_show_images():
@@ -85,3 +86,5 @@ def capture_from_camera_and_show_images():
 
 if __name__ == '__main__':
     capture_from_camera_and_show_images()
+```
+
